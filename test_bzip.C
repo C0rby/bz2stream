@@ -1,3 +1,12 @@
+// bzstream, C++ iostream classes wrapping the bzlib compression library.
+// This is a fork of the library gzstream.
+// 
+// File			 : test_bzip.C
+// Revision		 : $Revision: 1.0 $
+// Revision_date : $Date: 2019/01/12 02:02:12 $
+//
+// Original Author and License notice below.
+//
 // ============================================================================
 // gzstream, C++ iostream classes wrapping the zlib compression library.
 // Copyright (C) 2001  Deepak Bandyopadhyay, Lutz Kettner
@@ -25,7 +34,7 @@
 // Short test program reading a file, compressing it, and writing it.
 // ============================================================================
 
-#include <gzstream.h>
+#include <bzstream.h>
 #include <iostream>
 #include <fstream>
 #include <stdlib.h>
@@ -36,7 +45,7 @@ int main( int argc, char*argv[]) {
 	return EXIT_FAILURE;
     }
     // check alternate way of opening file
-    ogzstream    out2;
+	bz::obzstream    out2;
     out2.open( argv[2]);
     if ( ! out2.good()) {
         std::cerr << "ERROR: Opening file `" << argv[2] << "' failed.\n";
@@ -48,7 +57,7 @@ int main( int argc, char*argv[]) {
 	return EXIT_FAILURE;
     }
     // now use the shorter way with the constructor to open the same file
-    ogzstream  out( argv[2]);
+	bz::obzstream  out( argv[2]);
     if ( ! out.good()) {
         std::cerr << "ERROR: Opening file `" << argv[2] << "' failed.\n";
 	return EXIT_FAILURE;

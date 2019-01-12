@@ -1,3 +1,12 @@
+// bzstream, C++ iostream classes wrapping the bzlib compression library.
+// This is a fork of the library gzstream.
+// 
+// File			 : bzstream.C
+// Revision		 : $Revision: 1.0 $
+// Revision_date : $Date: 2019/01/12 01:46:54 $
+//
+// Original Author and License notice below.
+//
 // ============================================================================
 // gzstream, C++ iostream classes wrapping the zlib compression library.
 // Copyright (C) 2001  Deepak Bandyopadhyay, Lutz Kettner
@@ -26,30 +35,30 @@
 // Standard C++ Library".
 // ============================================================================
 
-#include <gzstream.h>
+#include <bzstream.h>
 #include <iostream>
 #include <string.h>  // for memcpy
 
-#ifdef GZSTREAM_NAMESPACE
-namespace GZSTREAM_NAMESPACE {
+#ifdef BZSTREAM_NAMESPACE
+namespace BZSTREAM_NAMESPACE {
 #endif
 
 // ----------------------------------------------------------------------------
-// Internal classes to implement gzstream. See header file for user classes.
+// Internal classes to implement bzstream. See header file for user classes.
 // ----------------------------------------------------------------------------
 
 // --------------------------------------
-// class gzstreambuf:
+// class bzstreambuf:
 // --------------------------------------
 
-gzstreambuf* gzstreambuf::open( const char* name, int open_mode) {
+bzstreambuf* bzstreambuf::open( const char* name, int open_mode) {
     if ( is_open())
-        return (gzstreambuf*)0;
+        return (bzstreambuf*)0;
     mode = open_mode;
     // no append nor read/write mode
     if ((mode & std::ios::ate) || (mode & std::ios::app)
         || ((mode & std::ios::in) && (mode & std::ios::out)))
-        return (gzstreambuf*)0;
+        return (bzstreambuf*)0;
     char  fmode[10];
     char* fmodeptr = fmode;
     if ( mode & std::ios::in)
@@ -58,24 +67,27 @@ gzstreambuf* gzstreambuf::open( const char* name, int open_mode) {
         *fmodeptr++ = 'w';
     *fmodeptr++ = 'b';
     *fmodeptr = '\0';
-    file = gzopen( name, fmode);
+    file = BZ2_bzopen( name, fmode);
     if (file == 0)
-        return (gzstreambuf*)0;
+        return (bzstreambuf*)0;
     opened = 1;
     return this;
 }
 
-gzstreambuf * gzstreambuf::close() {
+bzstreambuf * bzstreambuf::close() {
     if ( is_open()) {
         sync();
         opened = 0;
-        if ( gzclose( file) == Z_OK)
-            return this;
+        BZ2_bzclose( file); 
+		int errnum;
+		BZ2_bzerror(file, &errnum);
+		if (errnum == BZ_OK)
+        	return this;
     }
-    return (gzstreambuf*)0;
+    return (bzstreambuf*)0;
 }
 
-int gzstreambuf::underflow() { // used for input buffer only
+int bzstreambuf::underflow() { // used for input buffer only
     if ( gptr() && ( gptr() < egptr()))
         return * reinterpret_cast<unsigned char *>( gptr());
 
@@ -87,7 +99,7 @@ int gzstreambuf::underflow() { // used for input buffer only
         n_putback = 4;
     memcpy( buffer + (4 - n_putback), gptr() - n_putback, n_putback);
 
-    int num = gzread( file, buffer+4, bufferSize-4);
+    int num = BZ2_bzread( file, buffer+4, bufferSize-4);
     if (num <= 0) // ERROR or EOF
         return EOF;
 
@@ -100,17 +112,17 @@ int gzstreambuf::underflow() { // used for input buffer only
     return * reinterpret_cast<unsigned char *>( gptr());    
 }
 
-int gzstreambuf::flush_buffer() {
+int bzstreambuf::flush_buffer() {
     // Separate the writing of the buffer from overflow() and
     // sync() operation.
     int w = pptr() - pbase();
-    if ( gzwrite( file, pbase(), w) != w)
+    if ( BZ2_bzwrite( file, pbase(), w) != w)
         return EOF;
     pbump( -w);
     return w;
 }
 
-int gzstreambuf::overflow( int c) { // used for output buffer only
+int bzstreambuf::overflow( int c) { // used for output buffer only
     if ( ! ( mode & std::ios::out) || ! opened)
         return EOF;
     if (c != EOF) {
@@ -122,7 +134,7 @@ int gzstreambuf::overflow( int c) { // used for output buffer only
     return c;
 }
 
-int gzstreambuf::sync() {
+int bzstreambuf::sync() {
     // Changed to use flush_buffer() instead of overflow( EOF)
     // which caused improper behavior with std::endl and flush(),
     // bug reported by Vincent Ricard.
@@ -134,31 +146,31 @@ int gzstreambuf::sync() {
 }
 
 // --------------------------------------
-// class gzstreambase:
+// class bzstreambase:
 // --------------------------------------
 
-gzstreambase::gzstreambase( const char* name, int mode) {
+bzstreambase::bzstreambase( const char* name, int mode) {
     init( &buf);
     open( name, mode);
 }
 
-gzstreambase::~gzstreambase() {
+bzstreambase::~bzstreambase() {
     buf.close();
 }
 
-void gzstreambase::open( const char* name, int open_mode) {
+void bzstreambase::open( const char* name, int open_mode) {
     if ( ! buf.open( name, open_mode))
         clear( rdstate() | std::ios::badbit);
 }
 
-void gzstreambase::close() {
+void bzstreambase::close() {
     if ( buf.is_open())
         if ( ! buf.close())
             clear( rdstate() | std::ios::badbit);
 }
 
-#ifdef GZSTREAM_NAMESPACE
-} // namespace GZSTREAM_NAMESPACE
+#ifdef BZSTREAM_NAMESPACE
+} // namespace BZSTREAM_NAMESPACE
 #endif
 
 // ============================================================================
