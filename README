@@ -1,4 +1,6 @@
+# bz2stream
 
+## Readme of the original library
                               gzstream
       C++ iostream classes wrapping the zlib compression library.
 ===========================================================================
