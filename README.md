@@ -1,4 +1,4 @@
-# bz2stream
+# bzstream
 
 This library is just gzstream but instead of zlib it is using bzlib to support bzip2 files.
 The API mostly stays the same. Just the naming is differently e.g. all names which contained gz were switched to bz.
