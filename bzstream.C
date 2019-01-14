@@ -79,10 +79,10 @@ bzstreambuf * bzstreambuf::close() {
         sync();
         opened = 0;
         BZ2_bzclose( file); 
-		int errnum;
-		BZ2_bzerror(file, &errnum);
-		if (errnum == BZ_OK)
-        	return this;
+	int errnum;
+	BZ2_bzerror(file, &errnum);
+	if (errnum == BZ_OK)
+	  return this;
     }
     return (bzstreambuf*)0;
 }
